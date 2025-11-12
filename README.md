@@ -1,17 +1,17 @@
-# displaymode
+# displaymode "xrandr for Windows"
 
 Windows command-line tool (CLI) to list and change monitor resolution, refresh rate, and orientation.
-Think "xrandr for Windows."
 
-## Windows Refresh Rate CLI
-- Example: `displaymode --display \\.\\DISPLAY1 --hz 144`
+## Example
+#### Set Windows Refresh Rate
+- `displaymode --display \\.\\DISPLAY1 --hz 144`
 
-## Change Resolution via Command Line
-- Example: `displaymode --display 0 --width 1920 --height 1080 --persist`
+#### Change Resolution
+- `displaymode --display 0 --width 1920 --height 1080 --persist`
 
-## List Display Modes (Windows)
-- Example: `displaymode --list-modes --display "Dell" --json`
-
+#### List Display Modes
+- `displaymode --list-modes --display "Dell" --json`
+  
 ## Usage
 
 - List displays
@@ -54,4 +54,3 @@ Think "xrandr for Windows."
 cmake -S . -B build
 cmake --build build --config Release
 ```
-
