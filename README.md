@@ -1,6 +1,7 @@
 # displaymode
 
-Windows command-line tool (CLI) to list and change monitor resolution, refresh rate, and orientation. Safe apply with dry-run validation and JSON output. Think "xrandr for Windows."
+Windows command-line tool (CLI) to list and change monitor resolution, refresh rate, and orientation.
+Think "xrandr for Windows."
 
 ## Windows Refresh Rate CLI
 - Example: `displaymode --display \\.\\DISPLAY1 --hz 144`
