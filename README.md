@@ -54,7 +54,9 @@ displaymode [--list | --list-modes]
 -   `--json` Structured output for list and apply
 -   `--quiet | --verbose` Control human-readable verbosity
 
-Notes: Use `--list-modes` to discover exact width/height/Hz/orientation supported by the driver and display. Prefer device path or index for scripting.
+## Notes
+
+-   Use `--list-modes` to discover exact width/height/Hz/orientation supported by the driver and display. Prefer device path or index for scripting.
 
 ## Exit codes
 
