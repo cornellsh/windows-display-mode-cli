@@ -8,7 +8,7 @@ Windows command-line tool (CLI) to list and change monitor resolution, refresh r
 
 #### Change Resolution
 - `displaymode --display 0 --width 1920 --height 1080 --persist`
-=======
+
 Windows CLI to list displays and change resolution, refresh rate, and rotation. Safe to script with `--dry-run`, post-apply verification, and `--json`.
 
 Supported: Windows 7/8/10/11 (x64)
@@ -23,7 +23,6 @@ displaymode --display \\.\DISPLAY1 --hz 144
 displaymode --display 0 --width 1920 --height 1080 --hz 120 --persist
 displaymode --display "Dell" --orientation portrait --dry-run
 ```
->>>>>>> b71ffd3 (more features)
 
 #### List Display Modes
 - `displaymode --list-modes --display "Dell" --json`
