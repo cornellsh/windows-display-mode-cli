@@ -14,10 +14,10 @@ namespace drt
         // target selection
         std::string display;         // --display <id|index|name>
 
-        // desired mode
+        // requested mode parameters
         int width = -1;              // --width
         int height = -1;             // --height
-        int hz = -1;                 // --hz (rounded if decimal)
+        int hz = -1;                 // --hz
         int orientation = -1;        // --orientation (DMDO_*)
 
         // behavior flags

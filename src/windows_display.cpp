@@ -31,17 +31,17 @@ std::string drt::changeResultToText(LONG code)
     switch (code)
     {
     case DISP_CHANGE_SUCCESSFUL:
-        return "settings applied";
+        return "ok";
     case DISP_CHANGE_RESTART:
         return "restart required";
-    case DISP_CHANGE_BADMODE:
-        return "mode unsupported";
+    case DISP_CHANGE_BADFLAGS:
+        return "bad flags";
     case DISP_CHANGE_BADPARAM:
         return "bad parameter";
-    case DISP_CHANGE_BADFLAGS:
-        return "invalid flags";
     case DISP_CHANGE_BADDUALVIEW:
-        return "dual-view limitation";
+        return "bad dualview";
+    case DISP_CHANGE_BADMODE:
+        return "bad mode";
     case DISP_CHANGE_NOTUPDATED:
         return "registry not updated";
     case DISP_CHANGE_FAILED:

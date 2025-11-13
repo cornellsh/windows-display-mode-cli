@@ -14,33 +14,32 @@ struct DisplayId {
 
 struct DisplayInfo {
     DisplayId id;
-    std::string friendlyName;   // Target friendly name
-    std::string sourceName;     // e.g. \\.\DISPLAY1
+    std::string friendlyName;   // Monitor friendly name (UTF-8)
+    std::string sourceName;     // GDI source name: \\.\DISPLAY1
     bool isPrimary = false;
 };
 
 struct ModeInfo {
     int width = 0;
     int height = 0;
-    int hz = 0; // integer Hz for now
-    int orientation = DMDO_DEFAULT; // DMDO_*
+    int hz = 0;
+    int orientation = 0;     // DMDO_*
     int bitsPerPel = 0;
 };
 
 struct ApplyRequest {
-    // target selection by source name (e.g., \\.\DISPLAY1)
-    std::string sourceName;
+    std::string sourceName;    // Required: \\.\DISPLAYn
     int width = -1;
     int height = -1;
-    int hz = -1; // integer Hz; decimals will be rounded by CLI
-    int orientation = -1; // DMDO_*
-    bool persist = false; // save to registry
-    bool dryRun = false;  // validation only
+    int hz = -1;
+    int orientation = -1;      // DMDO_*
+    bool persist = false;
+    bool dryRun = false;
 };
 
 struct ApplyResult {
-    bool changed = false;
     bool success = false;
+    bool changed = false;
     std::string message;
 };
 

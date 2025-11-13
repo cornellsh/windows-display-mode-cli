@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <cstring>
+#include <string_view>
 
 #include <windows.h>
 
@@ -18,48 +19,34 @@ static bool parseInt(const char *s, int &out)
     return true;
 }
 
-std::string drt::usage(const std::string &program)
+static int parseOrientationToken(const char* s)
 {
-    std::ostringstream ss;
-    ss << "Usage:\n\n"
-       << "  " << program << " --list [--json]\n"
-       << "  " << program << " --list-modes --display <id|index|name> [--json]\n"
-       << "  " << program << " --display <id|index|name> [--hz HZ] [--width W] [--height H] [--orientation landscape|portrait|landscape_flipped|portrait_flipped] [--persist] [--dry-run] [--json]\n\n"
-       << "Notes:\n"
-       << "  - --display accepts Windows source name (e.g., \\ \\.\\DISPLAY1), numeric index, or a name substring.\n"
-       << "  - --hz accepts integer or decimal; decimals are rounded.\n";
-    return ss.str();
-}
-
-static bool parseBoolFlag(const char *a, const char *name)
-{
-    return std::strcmp(a, name) == 0;
-}
-
-static int parseOrientationToken(const char *token)
-{
-    if (!token)
-        return -1;
-    if (std::strcmp(token, "landscape") == 0)
-        return DMDO_DEFAULT;
-    if (std::strcmp(token, "portrait") == 0)
-        return DMDO_90;
-    if (std::strcmp(token, "landscape_flipped") == 0)
-        return DMDO_180;
-    if (std::strcmp(token, "portrait_flipped") == 0)
-        return DMDO_270;
+    if (!s) return -1;
+    // Accept numbers: 0, 90, 180, 270
+    if (std::strcmp(s, "0") == 0) return DMDO_DEFAULT;
+    if (std::strcmp(s, "90") == 0) return DMDO_90;
+    if (std::strcmp(s, "180") == 0) return DMDO_180;
+    if (std::strcmp(s, "270") == 0) return DMDO_270;
+    // Accept friendly names
+    if (_stricmp(s, "landscape") == 0) return DMDO_DEFAULT;
+    if (_stricmp(s, "portrait") == 0) return DMDO_90;
+    if (_stricmp(s, "landscape-flipped") == 0 || _stricmp(s, "landscape_inverted") == 0) return DMDO_180;
+    if (_stricmp(s, "portrait-flipped") == 0 || _stricmp(s, "portrait_inverted") == 0) return DMDO_270;
     return -1;
+}
+
+static bool parseBoolFlag(const char* a, const char* name) {
+    return std::strcmp(a, name) == 0;
 }
 
 bool drt::parseArgs(int argc, char **argv, drt::Args &out)
 {
-    out.program = argv && argv[0] ? argv[0] : "displaymode";
-    if (argc <= 1)
-        return false;
-
+    if (argc < 1) return false;
+    out.program = argv[0];
     for (int i = 1; i < argc; ++i)
     {
         const char *a = argv[i];
+
         if (parseBoolFlag(a, "--list"))
         {
             out.list = true;
@@ -103,31 +90,17 @@ bool drt::parseArgs(int argc, char **argv, drt::Args &out)
         }
         if (std::strcmp(a, "--width") == 0 && i + 1 < argc)
         {
-            int v = 0;
-            if (parseInt(argv[++i], v))
-                out.width = v;
-            else
-                return false;
+            if (!parseInt(argv[++i], out.width)) return false;
             continue;
         }
         if (std::strcmp(a, "--height") == 0 && i + 1 < argc)
         {
-            int v = 0;
-            if (parseInt(argv[++i], v))
-                out.height = v;
-            else
-                return false;
+            if (!parseInt(argv[++i], out.height)) return false;
             continue;
         }
         if (std::strcmp(a, "--hz") == 0 && i + 1 < argc)
         {
-            // accept decimal; round to nearest int
-            const char *s = argv[++i];
-            char *end = nullptr;
-            double dv = std::strtod(s, &end);
-            if (end == s)
-                return false;
-            out.hz = static_cast<int>(dv + (dv >= 0 ? 0.5 : -0.5));
+            if (!parseInt(argv[++i], out.hz)) return false;
             continue;
         }
         if (std::strcmp(a, "--orientation") == 0 && i + 1 < argc)
@@ -144,4 +117,26 @@ bool drt::parseArgs(int argc, char **argv, drt::Args &out)
     }
 
     return true;
+}
+
+std::string drt::usage(const std::string &program)
+{
+    std::ostringstream ss;
+    ss << "Usage:\n"
+       << "  " << program << " --list [--json]\n"
+       << "  " << program << " --list-modes --display <index|name|\\\\.\\DISPLAYn> [--json]\n"
+       << "  " << program << " --display <index|name|\\\\.\\DISPLAYn> [--width W --height H] [--hz F] [--orientation (0|90|180|270)] [--persist] [--dry-run] [--json]\n\n"
+       << "Options:\n"
+       << "  --list                     List active displays.\n"
+       << "  --list-modes               List modes for a display (requires --display).\n"
+       << "  --display <sel>            Select display by index (from --list), friendly name substring, or source (e.g., \\\\.\\DISPLAY1).\n"
+       << "  --width/--height           Target resolution. If only one set, the other must be provided.\n"
+       << "  --hz                       Target refresh rate.\n"
+       << "  --orientation              0=landscape,90=portrait,180=landscape-flipped,270=portrait-flipped.\n"
+       << "  --persist                  Save change to registry (CDS_UPDATEREGISTRY).\n"
+       << "  --dry-run                  Validate only (no change).\n"
+       << "  --json                     Machine-readable output.\n"
+       << "  --verbose                  Extra diagnostics to stderr.\n"
+       << "  --quiet                    Suppress human-readable output.\n";
+    return ss.str();
 }

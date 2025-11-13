@@ -2,10 +2,20 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <cctype>
 
 #include "cli.h"
 #include "windows_display.h"
 #include "display_config.h"
+#include "util.h"
+#include "version.h"
+
+static bool parseIndex(const std::string& s, int& out) {
+    if (s.empty()) return false;
+    for (char c : s) if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+    out = std::stoi(s);
+    return true;
+}
 
 int main(int argc, char **argv)
 {
@@ -16,22 +26,21 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    auto resolveSourceName = [](const std::string &sel, std::string &outSource) -> bool {
-        // If looks like \\.\DISPLAYn, use directly
-        if (sel.rfind("\\\\.\\DISPLAY", 0) == 0) { outSource = sel; return true; }
-
-        // Try numeric index
-        char *end = nullptr;
-        long idx = std::strtol(sel.c_str(), &end, 10);
-        std::vector<drt::DisplayInfo> displays;
-        std::string err;
-        if (*sel.c_str() != '\0' && *end == '\0') {
+    auto resolveSourceName = [&](const std::string &sel, std::string &outSource) -> bool
+    {
+        if (sel.rfind(R"(\\.\DISPLAY)", 0) == 0) { outSource = sel; return true; }
+        int idx = -1;
+        if (parseIndex(sel, idx)) {
+            std::vector<drt::DisplayInfo> displays;
+            std::string err;
             if (!drt::listDisplays(displays, err)) return false;
             if (idx < 0 || static_cast<size_t>(idx) >= displays.size()) return false;
             outSource = displays[static_cast<size_t>(idx)].sourceName;
             return true;
         }
         // Substring match on friendly or source
+        std::vector<drt::DisplayInfo> displays;
+        std::string err;
         if (!drt::listDisplays(displays, err)) return false;
         int match = -1;
         for (size_t i = 0; i < displays.size(); ++i) {
@@ -58,21 +67,18 @@ int main(int argc, char **argv)
                 std::cerr << (a.quiet ? "" : err) << std::endl;
                 return 5;
             }
-            if (a.json)
-            {
+            if (a.json) {
                 std::cout << "[";
-                for (size_t i = 0; i < displays.size(); ++i)
-                {
+                for (size_t i = 0; i < displays.size(); ++i) {
                     const auto &d = displays[i];
-                    std::cout << (i ? "," : "")
-                              << "{\"index\":" << i
+                    std::cout << (i? ",":"") << "{\"index\":" << i
+                              << ",\"source\":\"" << d.sourceName << "\""
                               << ",\"name\":\"" << d.friendlyName << "\""
-                              << ",\"source\":\"" << d.sourceName << "\"";
-                    std::cout << ",\"primary\":" << (d.isPrimary ? "true" : "false") << "}";
+                              << ",\"primary\":" << (d.isPrimary? "true":"false")
+                              << "}";
                 }
                 std::cout << "]\n";
-            }
-            else
+            } else if (!a.quiet)
             {
                 for (size_t i = 0; i < displays.size(); ++i)
                 {
@@ -104,21 +110,22 @@ int main(int argc, char **argv)
                 for (size_t i = 0; i < modes.size(); ++i)
                 {
                     const auto &m = modes[i];
-                    std::cout << (i ? "," : "")
-                              << "{\"w\":" << m.width
-                              << ",\"h\":" << m.height
+                    std::cout << (i? ",":"") << "{\"width\":" << m.width
+                              << ",\"height\":" << m.height
                               << ",\"hz\":" << m.hz
-                              << ",\"bpp\":" << m.bitsPerPel << "}";
+                              << ",\"orientation\":" << m.orientation
+                              << ",\"bpp\":" << m.bitsPerPel
+                              << "}";
                 }
                 std::cout << "]\n";
             }
-            else
+            else if (!a.quiet)
             {
                 for (const auto &m : modes)
                 {
-                    std::cout << m.width << "x" << m.height << " @ " << m.hz << "Hz";
-                    if (m.bitsPerPel) std::cout << " (" << m.bitsPerPel << "bpp)";
-                    std::cout << "\n";
+                    std::cout << m.width << "x" << m.height << "@" << m.hz
+                              << " bpp=" << m.bitsPerPel
+                              << " orientation=" << m.orientation << "\n";
                 }
             }
             return 0;
@@ -126,10 +133,10 @@ int main(int argc, char **argv)
     }
 
     // Apply flow
-    if (a.display.empty() || (a.hz < 0 && a.width < 0 && a.height < 0 && a.orientation < 0))
+    if (a.display.empty())
     {
-        std::cerr << drt::usage(a.program) << std::endl;
-        return 4; // invalid args
+        std::cerr << (a.quiet ? "" : "No display selected. Use --display or --list.") << std::endl;
+        return 3;
     }
 
     std::string sourceName;
@@ -153,11 +160,11 @@ int main(int argc, char **argv)
     {
         if (a.json)
         {
-            std::cout << "{\"success\":false,\"message\":\"" << res.message << "\"}\n";
+            std::cout << "{\"success\":false,\"changed\":false,\"message\":\"" << res.message << "\"}\n";
         }
         else if (!a.quiet)
         {
-            std::cerr << res.message << std::endl;
+            std::cerr << "Failed: " << res.message << std::endl;
         }
         return 6;
     }
