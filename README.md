@@ -1,6 +1,5 @@
 # displaymode "xrandr for Windows"
 
-<<<<<<< HEAD
 Windows command-line tool (CLI) to list and change monitor resolution, refresh rate, and orientation.
 
 ## Example
