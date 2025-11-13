@@ -1,6 +1,7 @@
 # displaymode "xrandr for Windows"
 
 Windows command-line tool (CLI) to list and change monitor resolution, refresh rate, and orientation.
+Supported: Windows 7/8/10/11 (x64)
 
 ## Example
 #### Set Windows Refresh Rate
@@ -8,10 +9,6 @@ Windows command-line tool (CLI) to list and change monitor resolution, refresh r
 
 #### Change Resolution
 - `displaymode --display 0 --width 1920 --height 1080 --persist`
-
-Windows CLI to list displays and change resolution, refresh rate, and rotation. Safe to script with `--dry-run`, post-apply verification, and `--json`.
-
-Supported: Windows 7/8/10/11 (x64)
 
 ## Quick start
 
